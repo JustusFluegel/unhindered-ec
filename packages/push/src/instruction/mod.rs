@@ -1,6 +1,9 @@
 use ordered_float::OrderedFloat;
 
-use crate::{push::instruction::instruction_error::PushInstructionError,error::InstructionResult, push_vm::push_state::PushState};
+use crate::{
+    error::InstructionResult, push::instruction::instruction_error::PushInstructionError,
+    push_vm::push_state::PushState,
+};
 
 pub use self::int::IntInstructionError;
 use self::variable_name::VariableName;

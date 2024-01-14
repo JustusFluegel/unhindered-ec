@@ -186,9 +186,7 @@ mod test {
             BoolInstruction::Or.into(),
             IntInstruction::Multiply.into(),
         ];
-        let parent = Plushy {
-            genes,
-        };
+        let parent = Plushy { genes };
 
         let child = umad.mutate(parent, &mut rng);
 
