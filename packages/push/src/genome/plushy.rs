@@ -72,6 +72,33 @@ impl<'a> GeneGenerator<SliceCloning<'a, PushInstruction>> {
     }
 }
 
+pub enum CloseProbability {
+    Uniform,
+    Given(f32),
+}
+
+pub trait IntoGeneGenerator
+where
+    // This Sized bound is ok here since we can't use to_... for ?Sized types
+    // anyways, since the impl Distribution<U> for &T in rand requires T:
+    // Sized (probably just not relaxed explicitly there)
+    Self: Distribution<PushInstruction> + Sized,
+{
+    fn into_gene_generator(self, close_probability: CloseProbability) -> GeneGenerator<Self>;
+
+    fn to_gene_generator(&self, close_probability: CloseProbability) -> GeneGenerator<&Self>;
+}
+
+impl<T> IntoGeneGenerator for T where T: Distribution<PushInstruction> {
+    fn into_gene_generator(self, close_probability: CloseProbability) -> GeneGenerator<Self> {
+        GeneGenerator::new(, )
+    }
+
+    fn to_gene_generator(&self, close_probability: CloseProbability) -> GeneGenerator<&Self> {
+        todo!()
+    }
+}
+
 impl<T> Distribution<PushGene> for GeneGenerator<T>
 where
     T: Distribution<PushInstruction>,

@@ -29,6 +29,10 @@ impl<T> OneOfCloning<T> {
             }),
         }
     }
+
+    pub fn collection(&self) -> &T {
+        &self.collection
+    }
 }
 
 impl<'a, T, U> Distribution<U> for OneOfCloning<T>
