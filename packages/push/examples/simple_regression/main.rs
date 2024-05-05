@@ -18,6 +18,7 @@ use ec_core::{
         },
         Composable,
     },
+    test_cases::{selectors::CyclicFisherYates, Case, WithTarget},
     test_results::{self, TestResults},
     uniform_distribution_of,
 };
@@ -25,12 +26,11 @@ use ec_linear::mutator::umad::Umad;
 use num_traits::Float;
 use ordered_float::OrderedFloat;
 use push::{
-    evaluation::cases::{Case, Cases, WithTarget},
     genome::plushy::{ConvertToGeneGenerator, Plushy},
     instruction::{variable_name::VariableName, FloatInstruction, PushInstruction},
     push_vm::{program::PushProgram, push_state::PushState, HasStack, State},
 };
-use rand::{distributions::Distribution, thread_rng};
+use rand::{distributions::Distribution, rngs::ThreadRng, thread_rng};
 
 use crate::args::{Args, RunModel};
 
@@ -67,15 +67,17 @@ fn build_push_state(
 
 fn score_program(
     program: impl DoubleEndedIterator<Item = PushProgram> + ExactSizeIterator,
-    Case { input, output }: Case<Of64>,
+    case: impl Case<Input = Of64, Output = Of64>,
 ) -> Of64 {
-    let state = build_push_state(program, input);
+    let state = build_push_state(program, *case.input());
     #[allow(clippy::option_if_let_else)]
     match state.run_to_completion() {
         Ok(final_state) => final_state
             .stack::<Of64>()
             .top()
-            .map_or(Of64::from(PENALTY_VALUE), |answer| (answer - output).abs()),
+            .map_or(Of64::from(PENALTY_VALUE), |answer| {
+                (answer - *case.expected_output()).abs()
+            }),
 
         Err(_) => {
             // Do some logging, perhaps?
@@ -84,14 +86,13 @@ fn score_program(
     }
 }
 
-fn score_genome(
+fn score_genome<'a>(
     genome: &Plushy,
-    training_cases: &Cases<Of64>,
+    training_cases: impl Iterator<Item = &'a (Of64, Of64)>,
 ) -> TestResults<test_results::Error<Of64>> {
     let program: Vec<PushProgram> = genome.clone().into();
 
     training_cases
-        .iter()
         .map(|&case| score_program(program.iter().cloned(), case))
         .collect()
 }
@@ -109,9 +110,10 @@ fn main() -> Result<()> {
     let mut rng = thread_rng();
 
     // Inputs from -4 (inclusive) to 4 (exclusive) in increments of 0.25.
-    let training_cases = (-4 * 4..4 * 4)
+    let training_cases = ((-4 * 4)..(4 * 4))
         .map(|n| Of64::from(n) / 4.0)
-        .with_target(|&i| target_fn(i));
+        .with_target(|&i| target_fn(i))
+        .collect::<Vec<_>>();
 
     /*
      * The `scorer` will need to take an evolved program (sequence of
@@ -122,7 +124,13 @@ fn main() -> Result<()> {
      *
      * The target polynomial is x^3 - 2x^2 - x
      */
-    let scorer = FnScorer(|genome: &Plushy| score_genome(genome, &training_cases));
+    let scorer = FnScorer(|genome: &Plushy| {
+        let mut rng = thread_rng();
+        let mut fisher_yates =
+            CyclicFisherYates::<Vec<(Of64, Of64)>, ThreadRng>::new(&training_cases, &mut rng)
+                .take(100);
+        score_genome(genome, &mut fisher_yates)
+    });
 
     let num_test_cases = 10;
 
