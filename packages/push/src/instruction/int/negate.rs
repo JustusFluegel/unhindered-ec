@@ -1,9 +1,60 @@
+use push_macros::svg_badge;
+
 use crate::{
     error::InstructionResult,
     instruction::{Instruction, PushInstructionError},
     push_vm::{stack::PushOnto, HasStack},
 };
 
+// #[svg_badge(r##"
+//     <style>
+//         .bg {
+//             fill: turquoise;
+//         }
+
+//         .fg {
+//             fill: black;
+//         }
+
+//         :root[data-theme=ayu] .bg {
+//             fill: red;
+//         }
+
+//         :root[data-theme=light] .bg {
+//             fill: blue;
+//         }
+
+//         :root[data-theme=light] .fg,
+//         :root[data-theme=ayu] .fg {
+//             fill: white;
+//         }
+//     </style>
+//     <title>Propeller</title>
+//     <linearGradient id="s" x2="0" y2="100%">
+//         <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+//         <stop offset="1" stop-opacity=".1"/>
+//     </linearGradient>
+//     <clipPath id="r">
+//         <rect width="131" height="20" rx="3" class="fg"/>
+//     </clipPath>
+//     <g clip-path="url(#r)">
+//         <rect class="bg" width="0" height="20"/>
+//         <rect class="bg" x="0" width="131" height="20"/>
+//         <rect width="131" height="20" fill="url(#s)"/>
+//     </g>
+//     <g class="fg" text-anchor="start" font-family="Verdana,Geneva,DejaVu
+// Sans,sans-serif" text-rendering="geometricPrecision" font-size="110">
+//         <text aria-hidden="true" x="50" y="150" fill="#010101"
+// fill-opacity=".3" transform="scale(.1)">             Propeller
+//         </text>
+//         <a href="#differences">
+//             <text x="50" y="140" transform="scale(.1)" class="fg">
+//                 Propeller
+//             </text>
+//         </a>
+//     </g>
+// "##)]
+// #[doc = "<br/>"]
 /// An instruction that negates the top
 /// value on the `i64` stack.
 ///

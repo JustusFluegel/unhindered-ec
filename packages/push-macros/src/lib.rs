@@ -1,6 +1,7 @@
 use push_state::printing::generate_builder::generate_builder;
-use quote::quote;
+use quote::{quote, ToTokens};
 use syn::{spanned::Spanned, DeriveInput};
+use uuid::Uuid;
 
 use crate::push_state::{parsing::parse_fields, printing::derive_has_stack::derive_has_stack};
 
@@ -120,4 +121,35 @@ pub fn push_state(
         #has_stack_derives
         #builder
     })
+}
+
+#[manyhow::manyhow(proc_macro_attribute)]
+pub fn svg_badge(attrs: syn::LitStr, tokens: proc_macro2::TokenStream) -> proc_macro2::TokenStream {
+    let svg_id = Uuid::new_v4();
+
+    let svg_tag = format!(
+        r##"
+            <svg 
+                style="margin-top: 1rem"
+                id="svg_badge_{svg_id}"
+                onload="javascript:(()=>{{let c=e=>{{document.getElementById('svg_badge_{svg_id}').dataset.theme=e}};c(document.documentElement.dataset.theme),new MutationObserver(e=>e.forEach(e=>{{c(document.documentElement.dataset.theme)}})).observe(document.documentElement,{{attributes:!0}});}})()"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                width="131"
+                height="20"
+                role="img"
+                aria-label="Saturates on overflow"
+            >
+                {attrs}
+            </svg>
+        "##,
+        attrs = attrs.value()
+    ).replace("\n", " ");
+
+    let svg_lit = syn::LitStr::new(svg_tag.trim(), proc_macro2::Span::mixed_site());
+
+    quote! {
+        #[doc = #svg_lit]
+        #tokens
+    }
 }

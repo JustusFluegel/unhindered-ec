@@ -1,0 +1,44 @@
+<svg 
+    style="margin-top: 1rem"
+    id="svg_badge_{svg_id}"
+    onload="javascript:(()=>{{let c=e=>{{document.getElementById('svg_badge_{svg_id}').dataset.theme=e}};c(document.documentElement.dataset.theme),new MutationObserver(e=>e.forEach(e=>{{c(document.documentElement.dataset.theme)}})).observe(document.documentElement,{{attributes:!0}});}})()"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="131"
+    height="20"
+    role="img"
+    aria-label="Saturates on overflow"
+>
+    <style>
+        .bg {
+            fill: red;
+        }
+
+        .fg {
+            fill: white;
+        }
+    </style>
+    <title>Propeller</title>
+    <linearGradient id="s" x2="0" y2="100%">
+        <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+        <stop offset="1" stop-opacity=".1"/>
+    </linearGradient>
+    <clipPath id="r">
+        <rect width="131" height="20" rx="3" class="fg"/>
+    </clipPath>
+    <g clip-path="url(#r)">
+        <rect class="bg" width="0" height="20"/>
+        <rect class="bg" x="0" width="131" height="20"/>
+        <rect width="131" height="20" fill="url(#s)"/>
+    </g>
+    <g class="fg" text-anchor="start" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110">
+        <text aria-hidden="true" x="50" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)">
+            Propeller
+        </text>
+        <a href="#differences">
+            <text x="50" y="140" transform="scale(.1)" class="fg">
+                Propeller
+            </text>
+        </a>
+    </g>
+</svg>
