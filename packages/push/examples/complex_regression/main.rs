@@ -104,7 +104,6 @@ fn score_genome(
 }
 
 fn main() -> Result<()> {
-    // FIXME: Respect the max_genome_length input
     let CliArgs {
         run_model,
         population_size,
