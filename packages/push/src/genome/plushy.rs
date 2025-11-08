@@ -283,7 +283,7 @@ mod test {
 
         let instruction_options = uniform_distribution_of![<PushGene> VariableName::from("x")];
 
-        let umad = Umad::new(0.3, 0.3, instruction_options);
+        let umad = Umad::<_, 1>::new(0.3, 0.3, instruction_options);
 
         let parent = Plushy {
             genes: vec_into![

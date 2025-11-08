@@ -94,7 +94,7 @@ use crate::genome::Linear;
 ///   (GECCO '18). Association for Computing Machinery, New York, NY, USA,
 ///   1127–1134. <https://doi.org/10.1145/3205455.3205603>
 #[must_use]
-pub struct Umad<GeneGenerator> {
+pub struct Umad<GeneGenerator, const N: usize> {
     /// The likelihood of adding a new gene next to each gene in the original
     /// genome
     addition_rate: f64,
@@ -110,7 +110,7 @@ pub struct Umad<GeneGenerator> {
     gene_generator: GeneGenerator,
 }
 
-impl<GeneGenerator> Umad<GeneGenerator> {
+impl<GeneGenerator, const N: usize> Umad<GeneGenerator, N> {
     /// Construct an instance of `Umad` with the empty addition rate set to be
     /// the same as the addition rate.
     ///
@@ -328,7 +328,7 @@ impl<GeneGenerator> Umad<GeneGenerator> {
     }
 }
 
-impl<G, GeneGenerator> Mutator<G> for Umad<GeneGenerator>
+impl<G, GeneGenerator> Mutator<G> for Umad<GeneGenerator, 1>
 where
     G: Linear + IntoIterator<Item = G::Gene> + FromIterator<G::Gene>,
     GeneGenerator: Distribution<G::Gene>,
@@ -345,6 +345,57 @@ where
                     .collect());
             }
         }
+
+        // Addition pass
+        Ok(genome
+            .into_iter()
+            .flat_map(|gene| {
+                // The body of this closure is due to MizardX@Twitch;
+                // much nicer than my original approach.
+                let add_gene = rng.random_bool(self.addition_rate);
+                let delete_gene = rng.random_bool(self.deletion_rate);
+                // only called when `add_gene` is true
+                let delete_new_gene = add_gene && rng.random_bool(self.deletion_rate);
+
+                let old_gene = (!delete_gene).then_some(gene);
+
+                let new_gene = match (add_gene, delete_new_gene) {
+                    (true, false) => Some(self.new_gene::<G, R>(rng)),
+                    _ => None,
+                };
+
+                // This randomly decides with a 50/50 probability which side of the old gene
+                // to place the new gene. This provides consistency with the definition of UMAD
+                // in Helmuth et al, lines 6-10 of Algorithm 1.
+                if rng.random::<bool>() {
+                    [old_gene, new_gene]
+                } else {
+                    [new_gene, old_gene]
+                }
+            })
+            .flatten()
+            .collect::<G>())
+    }
+}
+
+impl<G, GeneGenerator> Mutator<G> for Umad<GeneGenerator, 2>
+where
+    G: Linear + IntoIterator<Item = G::Gene> + FromIterator<G::Gene>,
+    GeneGenerator: Distribution<G::Gene>,
+{
+    type Error = Infallible;
+
+    fn mutate<R: Rng + ?Sized>(&self, genome: G, rng: &mut R) -> Result<G, Self::Error> {
+        if genome.size() == 0 {
+            if let Some(addition_rate) = self.empty_addition_rate {
+                return Ok(rng
+                    .random_bool(addition_rate)
+                    .then(|| self.new_gene::<G, R>(rng))
+                    .into_iter()
+                    .collect());
+            }
+        }
+
         // Addition pass
         Ok(genome
             .into_iter()
@@ -411,7 +462,7 @@ mod test {
         let mut rng = rng();
 
         let char_options = uniform_distribution_of!['x'];
-        let umad = Umad::new(0.3, 0.3, char_options);
+        let umad = Umad::<_, 1>::new(0.3, 0.3, char_options);
 
         let parent = "Morris, Minnesota".chars().collect::<Vec<_>>();
 
@@ -445,7 +496,7 @@ mod test {
     #[test]
     #[should_panic(expected = "`addition_rate` must be between 0.0 and 1.0 inclusive, but was 1.1")]
     fn panic_if_addition_rate_too_high() {
-        let _ = Umad::new_with_balanced_deletion(1.1, ());
+        let _ = Umad::<_, 1>::new_with_balanced_deletion(1.1, ());
     }
 
     #[test]
@@ -453,14 +504,14 @@ mod test {
         expected = "`addition_rate` must be between 0.0 and 1.0 inclusive, but was -0.2"
     )]
     fn panic_if_addition_rate_too_low() {
-        let _ = Umad::new_with_balanced_deletion(-0.2, ());
+        let _ = Umad::<_, 1>::new_with_balanced_deletion(-0.2, ());
     }
 
     #[test_case(0.1, 0.1 / (1.0 + 0.1); "small addition rate")]
     #[test_case(0.0, 0.0; "zero addition rate")]
     #[test_case(1.0, 0.5; "full addition rate")]
     fn correct_balanced_rate_calculation(addition_rate: f64, deletion_rate: f64) {
-        let umad = Umad::new_with_balanced_deletion(addition_rate, ());
+        let umad = Umad::<_, 1>::new_with_balanced_deletion(addition_rate, ());
 
         assert!(
             (umad.deletion_rate - deletion_rate).abs() < f64::EPSILON,
@@ -474,7 +525,7 @@ mod test {
         let mut rng = rng();
         // This generates "genes" that are always the character 'x'.
         let char_options = uniform_distribution_of!['x'];
-        let umad = Umad::new_without_empty_addition_rate(0.1, 0.1, char_options);
+        let umad = Umad::<_, 1>::new_without_empty_addition_rate(0.1, 0.1, char_options);
         // A parent with an empty genome
         let parent = Vec::new();
 
@@ -489,7 +540,7 @@ mod test {
         let mut rng = rng();
         // This generates "genes" that are always the character 'x'.
         let char_options = uniform_distribution_of!['x'];
-        let umad = Umad::new_with_empty_addition_rate(0.1, 1.0, 0.1, char_options);
+        let umad = Umad::<_, 1>::new_with_empty_addition_rate(0.1, 1.0, 0.1, char_options);
         // A parent with an empty genome
         let parent = Vec::new();
 
