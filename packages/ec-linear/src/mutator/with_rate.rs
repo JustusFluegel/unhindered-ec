@@ -38,6 +38,7 @@ impl WithRate {
     /// ```
     /// # use ec_linear::mutator::with_rate::WithRate;
     /// let mutator = WithRate::new(0.5);
+    /// # let _ = mutator;
     /// ```
     #[must_use]
     pub const fn new(mutation_rate: f32) -> Self {

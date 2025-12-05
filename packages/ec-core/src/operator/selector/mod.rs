@@ -266,6 +266,7 @@ impl<S> Select<S> {
     /// ```
     /// # use ec_core::operator::selector::{Select, best::Best};
     /// let operator = Select::new(Best);
+    /// # let _ = operator;
     /// ```
     pub const fn new(selector: S) -> Self {
         Self { selector }
@@ -329,6 +330,7 @@ where
     ///
     /// // can re-use the selector
     /// let operator_2 = Select::new(selector);
+    /// # let _ = operator_2;
     /// # Ok::<(), EmptyPopulation>(())
     /// ```
     fn select<'pop, R: Rng + ?Sized>(

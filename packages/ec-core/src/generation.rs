@@ -79,6 +79,7 @@ use crate::{operator::Operator, population::Population};
 /// let mut generation = Generation::new(make_new_individual, initial_population);
 /// generation.par_next()?;
 /// let next_generation = generation;
+/// # let _ = next_generation;
 /// # Ok(())
 /// # }
 /// ```
@@ -163,6 +164,7 @@ impl<C, P> From<(C, P)> for Generation<C, P> {
     /// let mut generation: Generation<_, _> = (make_new_individual, initial_population).into();
     /// generation.par_next()?;
     /// let next_generation = generation;
+    /// # let _ = next_generation;
     /// # Ok(())
     /// # }
     /// ```
@@ -409,7 +411,8 @@ impl<P, C> Generation<C, P> {
     ///     .then(Mutate::new(WithOneOverLength))
     ///     .wrap::<GenomeScorer<_, _>>(my_scorer);
     ///
-    /// let mut generation = Generation::new(make_new_individual, initial_population);
+    /// let generation = Generation::new(make_new_individual, initial_population);
+    /// # let _ = generation;
     /// # Ok(())
     /// # }
     /// ```
@@ -505,6 +508,7 @@ where
     /// let mut generation = Generation::new(make_new_individual, initial_population);
     /// generation.par_next()?;
     /// let next_generation = generation;
+    /// # let _ = next_generation;
     /// # Ok(())
     /// # }
     /// ```
@@ -628,6 +632,7 @@ where
     /// let mut generation = Generation::new(make_new_individual, initial_population);
     /// generation.serial_next()?;
     /// let next_generation = generation;
+    /// # let _ = next_generation;
     /// # Ok(())
     /// # }
     /// ```
