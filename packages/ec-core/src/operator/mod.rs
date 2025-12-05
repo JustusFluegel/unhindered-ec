@@ -41,6 +41,7 @@ pub use composable::Composable;
 /// # use ec_core::operator::{Operator, Composable};
 /// # use rand::Rng;
 /// #
+/// # #[allow(dead_code)]
 /// struct Apply<F>(F);
 ///
 /// impl<F> Composable for Apply<F> {}
@@ -55,7 +56,7 @@ pub use composable::Composable;
 ///     fn apply<R: Rng + ?Sized>(
 ///         &self,
 ///         input: In,
-///         rng: &mut R,
+///         _rng: &mut R,
 ///     ) -> Result<Self::Output, Self::Error> {
 ///         Ok((self.0)(input))
 ///     }

@@ -12,6 +12,7 @@
 /// This is how you might implement a Bitstring genome type:
 /// ```
 /// # use ec_core::genome::Genome;
+/// # #[allow(dead_code)]
 /// struct Bitstring {
 ///     length: usize,
 ///     storage: Vec<u64>,

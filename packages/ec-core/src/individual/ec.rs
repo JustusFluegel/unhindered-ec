@@ -170,7 +170,7 @@ impl<G: Display, R: Display> Display for EcIndividual<G, R> {
 /// # use ec_core::individual::{
 /// #     Individual,
 /// #     ec::{EcIndividual, IndividualGenerator},
-/// #     scorer::{Scorer, FnScorer}
+/// #     scorer::FnScorer
 /// # };
 /// #
 /// // StandardUniform is a `rand` distribution allowing
@@ -201,7 +201,7 @@ impl<GG, S> IndividualGenerator<GG, S> {
     /// # use ec_core::individual::{
     /// #     Individual,
     /// #     ec::{EcIndividual, IndividualGenerator},
-    /// #     scorer::{Scorer, FnScorer}
+    /// #     scorer::FnScorer
     /// # };
     /// #
     /// // StandardUniform is a `rand` distribution allowing
@@ -239,8 +239,8 @@ pub trait WithScorer {
     /// # use rand::distr::{StandardUniform, Distribution};
     /// # use ec_core::individual::{
     /// #     Individual,
-    /// #     ec::{EcIndividual, IndividualGenerator, WithScorer},
-    /// #     scorer::{Scorer, FnScorer}
+    /// #     ec::{EcIndividual, WithScorer},
+    /// #     scorer::FnScorer
     /// # };
     /// #
     /// // StandardUniform is a `rand` distribution allowing
@@ -266,8 +266,7 @@ pub trait WithScorer {
     /// # use rand::distr::{StandardUniform, Distribution};
     /// # use ec_core::individual::{
     /// #     Individual,
-    /// #     ec::{EcIndividual, IndividualGenerator, WithScorer},
-    /// #     scorer::Scorer
+    /// #     ec::{EcIndividual, WithScorer}
     /// # };
     /// #
     /// // StandardUniform is a `rand` distribution allowing
@@ -317,8 +316,7 @@ where
     /// # use rand::distr::{StandardUniform, Distribution};
     /// # use ec_core::individual::{
     /// #     Individual,
-    /// #     ec::{EcIndividual, IndividualGenerator, WithScorer},
-    /// #     scorer::Scorer
+    /// #     ec::{EcIndividual, WithScorer}
     /// # };
     /// #
     /// // StandardUniform is a `rand` distribution allowing

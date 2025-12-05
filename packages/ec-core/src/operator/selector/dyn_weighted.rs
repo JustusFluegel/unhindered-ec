@@ -59,6 +59,7 @@ where
     /// # use ec_core::operator::selector::{dyn_weighted::DynWeighted, best::Best};
     /// # type Population = Vec<i32>;
     /// let dyn_selector = [(Best, 1)].into_iter().collect::<DynWeighted<Population>>();
+    /// # let _ = dyn_selector;
     /// ```
     fn from_iter<T: IntoIterator<Item = (S, usize)>>(iter: T) -> Self {
         Self {
@@ -105,6 +106,7 @@ impl<P: Population> DynWeighted<P> {
     /// # use ec_core::operator::selector::{best::Best, dyn_weighted::DynWeighted};
     /// # type Population = Vec<i32>;
     /// let dyn_selector = DynWeighted::<Population>::new(Best, 1);
+    /// # let _ = dyn_selector;
     /// ```
     #[must_use]
     pub fn new<S>(selector: S, weight: usize) -> Self
@@ -124,6 +126,7 @@ impl<P: Population> DynWeighted<P> {
     /// # use ec_core::operator::selector::{best::Best, worst::Worst, dyn_weighted::DynWeighted};
     /// # type Population = Vec<i32>;
     /// let dyn_selector = DynWeighted::<Population>::new(Best, 1).with_selector(Worst, 1);
+    /// # let _ = dyn_selector;
     /// ```
     #[must_use]
     pub fn with_selector<S>(mut self, selector: S, weight: usize) -> Self

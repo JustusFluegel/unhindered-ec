@@ -760,7 +760,6 @@ impl<R: PartialEq> PartialEq<R> for TestResults<R> {
     /// # Examples
     /// ```
     /// # use ec_core::test_results::{TestResults, Score};
-    /// # use std::cmp::Ordering;
     /// let first_results = [Score(10), Score(20)]
     ///     .into_iter()
     ///     .collect::<TestResults<Score<i32>>>();
@@ -769,7 +768,6 @@ impl<R: PartialEq> PartialEq<R> for TestResults<R> {
     /// ```
     /// ```
     /// # use ec_core::test_results::{TestResults, Error};
-    /// # use std::cmp::Ordering;
     /// let first_results = [Error(10), Error(20)]
     ///     .into_iter()
     ///     .collect::<TestResults<Error<i32>>>();
@@ -778,7 +776,6 @@ impl<R: PartialEq> PartialEq<R> for TestResults<R> {
     /// ```
     /// ```
     /// # use ec_core::test_results::{TestResults, Error};
-    /// # use std::cmp::Ordering;
     /// let first_results = [Error(10), Error(20)]
     ///     .into_iter()
     ///     .collect::<TestResults<Error<i32>>>();
