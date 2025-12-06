@@ -43,12 +43,140 @@ then
     shift
   done
 
-  CLIPPYFLAGS="$(IFS="\x1E"; echo "${clippy_args[*]}")" RUSTDOCFLAGS="-Z unstable-options --no-run --no-capture --test-builder "$0"  ${rustdoc_args[@]}" exec cargo test --verbose --doc "${cargo_args[@]}"
+  CLIPPYFLAGS="$(IFS=$'\x1E'; echo "${clippy_args[*]}")" RUSTDOCFLAGS="-Z unstable-options --no-run --no-capture --test-builder "$0"  ${rustdoc_args[@]}" exec cargo test --verbose --doc "${cargo_args[@]}"
 else
   if [[ "$CLIPPYFLAGS" != "" ]]
   then
     IFS=$'\x1E' read -r -a clippyflags <<< "$CLIPPYFLAGS"
-    exec clippy-driver "${clippyflags[@]}" "$@"
+    # Detect JSON mode
+    json_mode=0
+    for arg in "${clippyflags[@]}" "$@"; do
+      case "$arg" in
+        --json=*|--json|--error-format=json)
+          json_mode=1
+          ;;
+      esac
+    done
+
+    # Filter args if JSON mode is on
+    filtered=()
+    skip_next=0
+
+    for arg in "$@"; do
+      if [[ $json_mode -eq 1 ]]; then
+        if [[ $skip_next -eq 1 ]]; then
+          skip_next=0
+          continue
+        fi
+
+        case "$arg" in
+          --color)
+            skip_next=1
+            continue
+            ;;
+          --color=*)
+            continue
+            ;;
+        esac
+      fi
+
+      filtered+=("$arg")
+    done
+
+    pkg_name="${CARGO_PKG_NAME:-unknown}"
+    pkg_version="${CARGO_PKG_VERSION:-0.0.0}"
+    manifest_dir="${CARGO_MANIFEST_DIR:-}"
+    target_name="${CARGO_TARGET_NAME:-$pkg_name}"
+
+    # Determine crate type and kind
+    crate_types="${CARGO_CRATE_TYPES:-[\"lib\"]}"
+    target_kind="${CARGO_TARGET_KIND:-$crate_types}"
+
+    # Determine artifact file path
+    target_dir="${CARGO_TARGET_DIR:-target}"
+    artifact_file="$target_dir/debug/deps/lib${pkg_name}.rlib"
+
+    # -------------------------------
+    # Run Clippy
+    # -------------------------------
+    if [[ $json_mode -eq 1 ]]; then
+      # Wrap Clippy diagnostics
+      clippy-driver "${clippyflags[@]}" "${filtered[@]}" 2>&1 | \
+      while IFS= read -r line; do
+        [[ -z "$line" ]] && continue
+        jq -M -c -n \
+          --arg pkg_name "$pkg_name" \
+          --arg pkg_version "$pkg_version" \
+          --arg manifest_dir "$manifest_dir" \
+          --arg target_name "$target_name" \
+          --arg target_kind "$target_kind" \
+          --arg crate_types "$crate_types" \
+          --argjson msg "$line" \
+          '{
+            reason: "compiler-message",
+            package_id: ($pkg_name + " " + $pkg_version + " (path+" + $manifest_dir + ")"),
+            target: {
+              name: $target_name,
+              kind: ($target_kind | fromjson),
+              crate_types: ($crate_types | fromjson)
+            },
+            message: $msg
+          }'
+      done
+
+      # Emit compiler-artifact
+      jq -M -c -n \
+        --arg pkg_name "$pkg_name" \
+        --arg pkg_version "$pkg_version" \
+        --arg manifest_dir "$manifest_dir" \
+        --arg target_name "$target_name" \
+        --arg target_kind "$target_kind" \
+        --arg crate_types "$crate_types" \
+        --arg artifact_file "$artifact_file" \
+        '{
+          reason: "compiler-artifact",
+          package_id: ($pkg_name + " " + $pkg_version + " (path+" + $manifest_dir + ")"),
+          target: {
+            name: $target_name,
+            kind: ($target_kind | fromjson),
+            crate_types: ($crate_types | fromjson)
+          },
+          filenames: [$artifact_file],
+          executable: null,
+          fresh: true
+        }'
+
+      # Emit build-finished
+      jq -M -c -n '{ reason: "build-finished", success: true }'
+      # pkg_name="${CARGO_PKG_NAME:-unknown}"
+      # pkg_version="${CARGO_PKG_VERSION:-0.0.0}"
+      # manifest_dir="${CARGO_MANIFEST_DIR:-}"
+      
+      #   clippy-driver "${clippyflags[@]}" "${filtered[@]}" 2>&1 | \
+      #   while IFS= read -r line; do
+      #     [[ -z "$line" ]] && continue
+      #     # Convert the line to a JSON object (jq safe)
+      #     jq -M -c -n \
+      #         --arg pkg_name "$pkg_name" \
+      #         --arg pkg_version "$pkg_version" \
+      #         --arg manifest_dir "$manifest_dir" \
+      #         --argjson msg "$line" \
+      #         '{
+      #           reason: "compiler-message",
+      #           package_id: ($pkg_name + " " + $pkg_version + " (path+" + $manifest_dir + ")"),
+      #           target: {
+      #             name: $pkg_name,
+      #             kind: ["lib"],
+      #             crate_types: ["lib"]
+      #           },
+      #           message: $msg
+      #         }'
+      #   done
+    else
+      exec clippy-driver "${clippyflags[@]}" "${filtered[@]}"
+    fi
+    # echo clippy-driver "${clippyflags[@]}" "$@"
+    # exec clippy-driver "${clippyflags[@]}" "$@"
   else
     exec clippy-driver "${@}"
   fi

@@ -56,6 +56,12 @@ need_stdout = false
 command = ["cargo", "clippy", "--all-targets"]
 need_stdout = false
 
+[jobs.clippy-doctests]
+#cargo +nightly rustdoc-clippy --message-format=json -- -- --error-format=json --json=diagnostic-rendered-ansi,artifacts -Dwarnings
+command = ["cargo", "+nightly", "rustdoc-clippy", "--message-format=json-diagnostic-rendered-ansi", "--", "--", "--error-format=json", "--json=diagnostic-rendered-ansi"]
+analyzer = "cargo_json"
+need_stdout = true
+
 [jobs.test]
 command = ["cargo", "test"]
 need_stdout = true
@@ -75,6 +81,7 @@ allow_warnings = true
 
 [keybindings]
 c = "job:clippy-all"
+v = "job:clippy-doctests"
 d = "job:doc"
 n = "job:nextest"
 t = "job:test"
