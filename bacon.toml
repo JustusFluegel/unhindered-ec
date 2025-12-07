@@ -60,6 +60,10 @@ need_stdout = false
 command = ["cargo", "test"]
 need_stdout = true
 
+[jobs.doctest]
+command = ["cargo", "test", "--workspace",  "--doc"]
+need_stdout = true
+
 [jobs.nextest]
 command = [
     "cargo", "nextest", "run",
@@ -78,6 +82,6 @@ c = "job:clippy-all"
 d = "job:doc"
 n = "job:nextest"
 t = "job:test"
-
+u = "job:doctests"
 
 alt-d = "job:private-doc"
