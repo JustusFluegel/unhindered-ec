@@ -29,7 +29,7 @@ use super::{
 /// let individual = EcIndividual::new(5, [scorer_1.score(&5), scorer_2.score(&5)]);
 /// assert_eq!(individual.test_results(), &[6, 25]);
 /// ```
-#[derive(Debug, Eq, PartialEq, Clone, Hash, Default)]
+#[derive(Debug, Eq, PartialEq, Copy, Clone, Hash, Default)]
 #[expect(
     clippy::module_name_repetitions,
     reason = "This is legacy and arguably should be changed. Tracked in #221"
@@ -262,6 +262,8 @@ pub trait WithScorer {
     /// Convenience function to directly use a closure as a scorer, which will
     /// then be turned into a [`FnScorer`]
     ///
+    /// Also see [`WithScorer::with_scorer`]
+    ///
     /// # Example
     /// ```
     /// # use rand::distr::{StandardUniform, Distribution};
@@ -289,6 +291,17 @@ pub trait WithScorer {
 }
 
 impl<GD> WithScorer for GD {
+    /// Create a [`Distribution`] of scored genomes by scoring them using the
+    /// provided `scorer`, turning them into individuals.
+    ///
+    /// # Example
+    /// ```
+    /// # use ec_core::individual::{scorer::FnScorer,ec::{EcIndividual, WithScorer}};
+    /// # use rand::{rng, distr::{StandardUniform, Distribution}};
+    /// let scorer = FnScorer(|genome: &u32| genome.count_ones());
+    /// let individual: EcIndividual<u32, u32> = StandardUniform.with_scorer(scorer).sample(&mut rng());
+    /// # let _ = individual;
+    /// ```
     fn with_scorer<S, G>(self, scorer: S) -> IndividualDistribution<GD, S>
     where
         S: Scorer<G>,
