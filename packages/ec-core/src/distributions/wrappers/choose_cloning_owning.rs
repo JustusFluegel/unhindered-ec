@@ -14,6 +14,21 @@ use crate::distributions::finite::Finite;
 ///
 /// Also see [`ChooseCloning`](super::choose_cloning::ChooseCloning) for an
 /// alternative that borrows the collection instead.
+///
+/// # Example
+/// ```
+/// # use rand::{rng, distr::{Distribution, slice::Empty}};
+/// # use ec_core::distributions::wrappers::choose_cloning_owning::ChooseCloningOwning;
+/// #
+/// # fn main() -> Result<(), Empty> {
+/// let my_collection = [0, 1, 2, 3];
+/// let my_distribution = ChooseCloningOwning::new(my_collection)?;
+///
+/// let my_sample = my_distribution.sample(&mut rng());
+/// # let _ = my_sample;
+/// # Ok(())
+/// # }
+/// ```
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct ChooseCloningOwning<T, U> {
     // It is really important here that the fields `collection`, `range` and `num_choices` are
@@ -68,6 +83,21 @@ where
     }
 }
 impl<T, U> Finite for ChooseCloningOwning<T, U> {
+    /// Sample space size / number of choices of this [`ChooseCloningOwning`]
+    /// [`Distribution`].
+    ///
+    /// # Example
+    /// ```
+    /// # use rand::distr::slice::Empty;
+    /// # use ec_core::distributions::{wrappers::choose_cloning_owning::ChooseCloningOwning, finite::Finite};
+    /// #
+    /// # fn main() -> Result<(), Empty> {
+    /// let distribution = ChooseCloningOwning::new([1, 2, 3])?;
+    /// assert_eq!(distribution.sample_space_size().get(), 3);
+    /// # let _ = distribution;
+    /// # Ok(())
+    /// # }
+    /// ```
     fn sample_space_size(&self) -> NonZeroUsize {
         self.num_choices
     }
